@@ -1,0 +1,2168 @@
+FORMAT: 1A
+HOST: http://webapimanagement.cloudapp.net/
+
+# SmartLiving
+SmartLiving API is ...
+
+## Typical Server Responses
+
+- 200 `OK` - The request was successful (some API calls may return 201 instead).
+- 201 `Created` - The request was successful and a resource was created.
+- 204 `No Content` - The request was successful but there is no representation to return (that is, the response is empty).
+- 400 `Bad Request` - The request could not be understood or was missing required parameters.
+- 401 `Unauthorized` - Authentication failed or user does not have permissions for the requested operation.
+- 403 `Forbidden` - Access denied.
+- 404 `Not Found` - Resource was not found.
+- 405 `Method Not Allowed` - Requested method is not supported for the specified resource.
+- 429 `Too Many Requests` - Exceeded GoodData API limits. Pause requests, wait one minute, and try again. 
+- 503 `Service Unavailable` - The service is temporary unavailable (e.g. scheduled Platform Maintenance). Try again later.
+
+
+# Group Accounts
+
+User accounts related resources of the **SmartLiving API**, currently implementing basic OAuth2 authorization. In order to implement OAuth2 authorization we will need to provide 
+2 additional parametars from client apps. 
+
+- client_id : "mobileApp"
+- client_secret : "123@abc"
+
+NOTE: above parameters are valid to use for testing purposes
+
+For issuing new or for refreshing existing access token client must provide these 2 parameters.
+
+
+## Register new user account [/register]
+Simple plain register with only 3 parameters
+
+### Register Account [POST]
+Register new user account
+
+- `username` (Unique)
+- `email` (Unique)
+- `password` (8 characters min)
+
++ Request (application/json)
+
+    + Body
+    
+            {
+                "username": "someusername",
+                "email": "someusername@someemail.com",
+                "password": "SuperCoolPass1!"
+            }
+
++ Response 200
+
+  
++ Response 400
+
+        {
+            "message" : [
+                            { 
+                                "error" : "some error text." 
+                            },  
+                            { 
+                                "error" : "some error text 2." 
+                            }   
+                        ],
+            "developerMessage": "A message used for debugging purposes",
+            "plainErrors": "some error text. some error text 2.",
+            "state": {
+                        "some_property_name":{
+                                    "value": null,
+                                    "errors": [
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text."
+                                                  },
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text 2."
+                                                  }
+                                              ]
+                                }
+                    }
+        }
+
+## OAuth2 Token [/login]
+Retrieve new access token or refresh existing access token for registered user account.
+There are 2 types of POST /login calls:
+
+- Obtain new access token sending username and password 
+- Obtain new access token by sending existing refresh token
+
+Each access token has exactly `60 min` expiry policy. This means that after 60 mins the access token in no longer valid, 
+therefore client needs to obtain new access token using previously provided refresh token.
+
+### Login user via username and password [POST]
+
+To get access token for username and password, client must send following parameters:
+
+- grant_type=password
+- username
+- password
+- client_id (this will be different for each API Client: iOS app, Android app, web app)
+- client_secret (each client_id will have it's own secret key)
+- uuid (Unique identifier for the device e.g. UUID of the phone or Browser-Agent for the web applications)
+
+For getting access token via existing refresh token following parameters will be send
+
+- grant_type=refresh_token
+- refresh_token
+- client_id (this will be different for each API Client: iOS app, Android app, web app)
+- client_secret (each client_id will have it's own secret key)
+
++ Request (application/x-www-form-urlencoded)
+
+    + Body
+    
+            grant_type=password&username=someusername&password=SuperCoolPass1&client_id=mobileApp&client_secret=123@abc&uuid=some_unique_device_id
+
++ Response 200
+
+        {
+            "access_token": "some_encripted_token_value",
+            "token_type": "bearer",
+            "expires_in": 3599,
+            "refresh_token": "some_refresh_token",
+            "as:client_id": "mobileApp",
+            "userName": "someusername",
+            "uuid": "some_unique_device_id"
+            ".issued": "Wed, 20 Aug 2014 14:55:38 GMT",
+            ".expires": "Thu, 21 Aug 2014 14:55:38 GMT"
+        }
+            
++ Response 400
+
+        {
+            "error": "oAuth2_error_short_info",
+            "error_description": "Optional full description (human readable) of the error oAuth2_error_short_info"
+        }
+
++ Request (application/x-www-form-urlencoded)
+
+    + Body
+    
+            grant_type=refresh_token&refresh_token=some_refresh_token&client_id=mobileApp&client_secret=123@abc
+
++ Response 200
+
+        {
+            "access_token": "some_new_encrypted_token_value",
+            "token_type": "bearer",
+            "expires_in": 3599,
+            "refresh_token": "some_new_refresh_token",
+            "as:client_id": "mobileApp",
+            "userName": "someusername",
+            "uuid": "some_unique_device_id"
+            ".issued": "Fri, 22 Aug 2014 12:52:22 GMT",
+            ".expires": "Fri, 22 Aug 2014 13:52:22 GMT"
+        }
+            
++ Response 400
+
+        {
+            "error": "oAuth2_error_short_info",
+            "error_description": "Optional full description (human readable) of the error oAuth2_error_short_info"
+        }
+
+## Logout user account [/logout]
+
+### Logout user [POST]
+
++ Request (application/json)
+
+    + Header
+
+            Authorization: Bearer some_encrypted_token_value
+    
++ Response 200
+
++ Response 401
+
+        {
+            "message": "Authorization has been denied for this request."
+        }
+
+# Group Gateways
+Gateway is a type of device which suits asto control smart devices at a certain client's physcial location. For example Zipr gateway.
+
+
+
+## Gateway [/gateway/{id}{?includeDevices}]
+
+A single Gateway for current Client with all its details
+
+The Gateway resource has the following attributes:
+
+- `id` identifier that CAPP assigns to the gateway at the moment of creation
+- `uid` unique identifier of the physical gateway device, known to user before creating gateway 
+- `name`
+- `description`
+- `devices`
+
++ Parameters
+    + id (required, string, `gateway-A`) ... String `id` of the Gateway to perform action with. Has example value.
+    + includeDevices = `false` (optional, boolean, `true`) ... Query parameter. If true response includes collection of devices.
+
++ Model (application/json)
+
+        JSON representation of the Gateway resource.
+        
+    + Body
+    
+            {
+                "id": "53f7345a3c54ec17f4d9c08b", 
+                "uid": "aaA", 
+                "name": "Gateway A", 
+                "description": "Description A",
+                "devices": [
+                    {
+                        "id": "npjTQsoDfbQ8tMyDE1TIlXp",
+                        "name": "Wall Plug",
+                        "description": null,
+                        "gatewayId": "53f7345a3c54ec17f4d9c08b",
+                        "createdBy": "53f7345a3c54ec17f4d9c087",
+                        "createdOn": "0001-01-01T00:00:00Z",
+                        "iconKey" : "binary-switch",
+                        "control": {
+                            "type": "binary-switch",
+                            "profile": {
+                                "type": "bool"
+                            },
+                            "links": [
+                                { "name": "get", "url": "/asset/npjTQsoDfbQ8tMyDE1TIlXp_asset_01/state" },
+                                { "name": "set", "url": "/asset/npjTQsoDfbQ8tMyDE1TIlXp_asset_01/command" }
+                            ],
+                            "state": {
+                                "value": true,
+                                "at": "2014-08-29T15:01:49.445Z"
+                            }
+                        },
+                        "assets": [
+                            {
+                                "id": "npjTQsoDfbQ8tMyDE1TIlXp_asset_01",
+                                "name": "asset_01",
+                                "style": "primary",
+                                "label": "Power Switch",
+                                "description": "...",
+                                "profile": {
+                                    "type": "boolean"
+                                },
+                                "state" : {
+                                    "value" : true,
+                                    "at": "2014-08-29T15:01:49.445Z"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "id": "fSxBvLsVxCzpIgX2XFxjc9t",
+                        "name": "Flood Sensor",
+                        "description": null,
+                        "gatewayId": "53f7345a3c54ec17f4d9c08b",
+                        "createdBy": "53f7345a3c54ec17f4d9c087",
+                        "createdOn": "0001-01-01T00:00:00Z",
+                        "iconKey" : "binary-sensor",
+                        "control": {
+                            "type": "binary-sensor",
+                            "profile": {
+                                "type": "bool"
+                            },
+                            "state": {
+                                "value": true,
+                                "at": "2014-08-29T15:01:49.445Z"
+                            },
+                            "values": [
+                                { 
+                                    "value": true,
+                                    "img": "water_alarm_on",
+                                    "imgPath": "/path/to/water_alarm_on",            
+                                    "label": "ON"
+                                },
+                                {
+                                    "value": false,
+                                    "img": "water_alarm_off",
+                                    "imgPath": "/path/to/water_alarm_off",
+                                    "label": "OFF"
+                                }
+                            ],
+                            "links": [
+                                { "name": "get", "url": "/asset/fSxBvLsVxCzpIgX2XFxjc9t_asset_01/state" },
+                            ]
+                        },
+                        "assets": [
+                            {
+                                "id": "fSxBvLsVxCzpIgX2XFxjc9t_asset_01",
+                                "name": "asset_01",
+                                "style": "primary",
+                                "label": "Water Alarm",
+                                "description": "...",
+                                "profile": {
+                                    "type": "boolean"
+                                },
+                                "state" : {
+                                    "value" : true,
+                                    "at": "2014-08-29T15:01:49.445Z"
+                                }
+                            },
+                            {
+                                "id": "fSxBvLsVxCzpIgX2XFxjc9t_asset_02",
+                                "name": "asset_02",
+                                "style": "battery",
+                                "label": "Battery level",
+                                "description": "...",
+                                "profile": {
+                                    "type": "int",
+                                    "min": 0,
+                                    "max": 100
+                                },
+                                "state" : {
+                                    "value" : 50,
+                                    "at": "2014-08-29T15:01:49.445Z"
+                                }
+                            },
+                            {
+                                "id": "fSxBvLsVxCzpIgX2XFxjc9t_asset_03",
+                                "name": "asset_03",
+                                "style": "config",
+                                "label": "Wake up interval",
+                                "tags": [ "battery-life" ],
+                                "description": "...",
+                                "profile": {
+                                    "type": "int"
+                                },
+                                "state" : {
+                                    "value" : 100,
+                                    "at": "2014-08-29T15:01:49.445Z"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "id": "Dh7O5CfyoHu0plHmHDH1KVq",
+                        "name": "Motion Sensor",
+                        "description": "...",
+                        "gatewayId": "53f7345a3c54ec17f4d9c08b",
+                        "createdBy": "53f7345a3c54ec17f4d9c087",
+                        "createdOn": "0001-01-01T00:00:00Z",
+                        "iconKey" : "binary-sensor",
+                        "control": {
+                            "type": "binary-sensor",
+                            "profile": {
+                                "type": "bool"
+                            },
+                            "state": {
+                                "value": false,
+                                "at": "2014-08-29T15:01:49.445Z"
+                            },
+                            "values": [
+                                { 
+                                    "value": true,
+                                    "img": "motion_alarm_on",
+                                    "imgPath": "/path/to/motion_alarm_on",            
+                                    "label": "ON"
+                                },
+                                {
+                                    "value": false,
+                                    "img": "motion_alarm_off",
+                                    "imgPath": "/path/to/motion_alarm_off",
+                                    "label": "OFF"
+                                }
+                            ],
+                            "links": [
+                                { "name": "get", "url": "/asset/Dh7O5CfyoHu0plHmHDH1KVq_asset_01/state" },
+                            ]
+                        },
+                        "assets": [
+                            {
+                                "id": "Dh7O5CfyoHu0plHmHDH1KVq_asset_01",
+                                "name": "asset_01",
+                                "style": "primary",
+                                "label": "Motion Alarm",
+                                "description": "...",
+                                "profile": {
+                                    "type": "boolean"
+                                },
+                                "state" : {
+                                    "value" : false,
+                                    "at": "2014-08-29T15:01:49.445Z"
+                                }
+                            },
+                            {
+                                "id": "Dh7O5CfyoHu0plHmHDH1KVq_asset_02",
+                                "name": "asset_02",
+                                "style": "battery",
+                                "label": "Battery level",
+                                "description": "...",
+                                "profile": {
+                                    "type": "int",
+                                    "min": 0,
+                                    "max": 100
+                                },
+                                "state" : {
+                                    "value" : 50,
+                                    "at": "2014-08-29T15:01:49.445Z"
+                                }
+                            },
+                            {
+                                "id": "fSxBvLsVxCzpIgX2XFxjc9t_asset_03",
+                                "name": "asset_03",
+                                "style": "config",
+                                "label": "Wake up interval",
+                                "tags": [ "battery-life" ],
+                                "description": "...",
+                                "profile": {
+                                    "type": "int"
+                                },
+                                "state" : {
+                                    "value" : 100,
+                                    "at": "2014-08-29T15:01:49.445Z"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "key": "ffedsseraa23sdda"
+            }
+
+### Retrieve a Gateway [GET]
+
++ Request (application/json)
+
+    + Header
+
+            Authorization: Bearer some_encrypted_token_value
+    
+    
++ Response 200
+
+    [Gateway][]
+
+
++ Response 401
+
++ Response 403
+
++ Response 404
+
+## Gateway Methods [/gateway/{id}]
+
++ Parameters
+    + id (required, string, `gateway-A`) ... String `id` of the Gateway to perform action with. Has example value.
+
+### DRAFT: Update Gateway [POST]
+    
+Partial update of a Gateway. Allows client to update these Gateway fields:
+
+- name
+- description
+
++ Parameters
+    + id (required, string, `gateway-A`) ... String `id` of the Gateway to perform action with. Has example value.
+
++ Request
+
+    + Header
+
+            Authorization: Bearer some_encrypted_token_value
+    
+    + Body
+
+            {
+                "name": "Gateway A renamed",
+                "description": "Gateway A new description"
+            }
+
++ Response 200 (application/json)
+
+        {
+            "id": "gateway-A", 
+            "name": "Renamed Gateway A", 
+            "description": "Description A"
+        }
+
++ Response 401
+
++ Response 403
+
++ Response 404
+
+### DRAFT: Replace Gateway [PUT] 
+
+> @np: I'd keep PUT method as a way to replace the whole Gateway, but not sure if we need it atm. 
+    Consider removing this method from docs
+
++ Request (application/json)
+
+    + Header
+
+            Authorization: Bearer some_encrypted_token_value
+    
+    + Body
+
+            {
+                "name": "Renamed Gateway A"
+            }
+
++ Response 200 (application/json)
+
+        {
+            "id": "gateway-A", "name": "Renamed Gateway A", "description": "Description A"
+        }
+
++ Response 401
+
++ Response 403
+
++ Response 404
+  
+
+### Delete Gateway [DELETE]
+
+If Gateway resource exists this will remove it from the System. It will also remove all associated devices.
+
+> __NOTE__ This mwthod will send reset command to a physical gateway. 
+
+> __NOTE__ For testing purposes only. This function must not be exposed to public in the future. 
+
++ Response 204
+
++ Response 404
+
++ Response 400
+
+        {
+            "message" : [
+                            { 
+                                "error" : "some error text." 
+                            },  
+                            { 
+                                "error" : "some error text 2." 
+                            }   
+                        ],
+            "developerMessage": "A message used for debugging purposes",
+            "plainErrors": "some error text. some error text 2.",
+            "state": {
+                        "some_property_name":{
+                                    "value": null,
+                                    "errors": [
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text."
+                                                  },
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text 2."
+                                                  }
+                                              ]
+                                }
+                    }
+        }
+
+
+## Gateways Collection [/gateway]
+
+Collection of all gateways owned by an authorized client
+
+### List Gateways [GET]
+
+List the authenticated user’s gateways.
+
++ Request (application/json)
+
+    + Header
+
+            Authorization: Bearer some_encrypted_token_value
+
++ Response 200 (application/json)
+
+        [{
+            "id": "gateway-A", "uid": "gateway-A-uid", "name": "Gateway A", "description": "Description A"
+        }, {
+            "id": "gateway-B", "uid": "gateway-B-uid", "name": "Gateway B", "description": "Description B"
+        }]
+
++ Response 401
+
+### Enroll Gateway [POST]
+
+Enroll new gateway. If called anonymously, this will create an orphaned gateway. 
+
+### Parameters
+
+| Name          | Type                  | Description  |
+| :---          | :-------------        | :----------  |
+| uid           | string                | **Required** Identifier of physical gateway, usually device's serial or product number |
+| name          | string                | |
+| description   | string                | |
+
++ Request (application/json)
+
+    + Header
+    
+            Authorization: Bearer some_encrypted_token_value
+            
+    + Body
+    
+            {
+                "uid": "ccC", 
+                "name": "Gateway C", 
+                "description": "Description C"
+            }
+            
+
++ Response 204
+
++ Response 200 (application/json)
+
+
+        [Gateway][]
+    
+    
+## Claiming Gateway [/claim]
+
+Claiming a Gateway for current Client with all its details.
+
+### Claim Gateway [POST]
+
+If claim was successfull so Gateway is active, SmartLiving responds with 201. Otherwise responds with 200
+
++ Request (application/json)
+
+    + Header
+
+            Authorization: Bearer some_encrypted_token_value
+
+    + Body
+
+            {
+                "claimCode": "ccC"
+            }
+
+
++ Response 200
+
++ Response 201 (application/json)
+
+        [Gateway][]
+    
++ Response 401
+
++ Response 404
+
+
+## Gateway Commands [/command/{gatewayId}]
+
+Sending command to a gateway. Possible type values:
+
+- `start-include`  send start include command to a gateway
+- `start-exclude`  send start exclude command to a gateway
+- `stop-include-exclude`  send stop include or exclude command to a gateway
+- `reset`  send reset gateway command to a gateway (used for RPI to autodelete config file)
+
++ Parameters
+    + gatewayId (required, string, `gateway-A`) ... String `id` of the Gateway to perform action with. Has example value.
+
+### Send Gateway command [PUT]
+
++ Request (application/json)
+
+    + Header
+
+            Authorization: Bearer some_encrypted_token_value
+    + Body
+    
+            {
+                "type": "start-include"
+            }
+
++ Response 200
+
++ Response 400
+
+
+   
+
+# Group Devices
+
+Device related resources of the **SmartLiving API**
+
+## Device [/device/{id}]
+
+Representation of Device resource
+
+- `id`: identifier that CAPP assigns to the device at the moment of creation
+- `gatewayId`: (optional, string, `gateway-A`) ... Hello
+- `name`
+- `description`
+- `iconKey` : best guess for the key of the icon that client can use to show device's icon / image
+- `assets`: collection of Asset resources, components of the represented Device resource
+- `control`: describes howthe device control UI. Client developer can use this object to generate that will allow user to control the devices' main function (or primary Asset). 
+    - `control.type` : can be one of `[ "binary-sensor", "binary-switch" ]` (UNTIL WE SUPPORT THEM ALL!)
+    - `control.links` : use the links to ``get`` the state or ``set`` to publish command to change the state of primary asset
+    - `control.state` : current state of primary asset (so client does not have to make additional request to get it)
+    
+
+
++ Parameters
+    + id (required, string, `device-A1`) ... System idenitifier of the Device
+
++ Model (application/json)
+
+        JSON representation of the Device resource.
+        
+    + Body
+    
+            {
+                "id": "npjTQsoDfbQ8tMyDE1TIlXp",
+                "name": "Wall Plug",
+                "description": null,
+                "gatewayId": "53f7345a3c54ec17f4d9c08b",
+                "createdBy": "53f7345a3c54ec17f4d9c087",
+                "createdOn": "0001-01-01T00:00:00Z",
+                "iconKey" : "binary-switch",
+                "control": {
+                    "type": "binary-switch",
+                    "profile": {
+                        "type": "bool"
+                    },
+                    "links": [
+                        { "name": "get", "url": "/asset/npjTQsoDfbQ8tMyDE1TIlXp_asset_01/state" },
+                        { "name": "set", "url": "/asset/npjTQsoDfbQ8tMyDE1TIlXp_asset_01/command" }
+                    ],
+                    "state": {
+                        "value": true,
+                        "at": "2014-08-29T15:01:49.445Z"
+                    }
+                },
+                "assets": [
+                    {
+                        "id": "npjTQsoDfbQ8tMyDE1TIlXp_asset_01",
+                        "name": "asset_01",
+                        "is" : "actuator",
+                        "style": "primary",
+                        "label": "Power Switch",
+                        "description": "...",
+                        "profile": {
+                            "type": "boolean"
+                        },
+                        "state" : {
+                            "value" : true,
+                            "at": "2014-08-29T15:01:49.445Z"
+                        }
+                    },
+                    {
+                        "id" : "npjTQsoDfbQ8tMyDE1TIlXp_asset_02",
+                        "name": "asset_02",
+                        "is" : "actuator",
+                        "style": "config",
+                        "label" : "Always On Function",
+                        "description" : "Once activated, Wall Plug will keep a connected device constantly ON, will stop reacting to alarm frames and B-button push",
+                        "profile" : {
+                            "type" : "int",
+                            "default" : 1,
+                            "min": 0,
+                            "max": 1
+                        },
+                        "state" : {
+                            "value" : 1,
+                            "at": "2014-08-29T15:01:49.445Z"
+                        }
+                    },
+                    {
+                        "id" : "npjTQsoDfbQ8tMyDE1TIlXp_asset_03",
+                        "name": "asset_03",
+                        "is" : "actuator",
+                        "style": "config",
+                        "label" : "Remember device status after power failure",
+                        "description" : "Define how will the Plug react after the power supply is back on",
+                        "profile" : {
+                            "type" : "int",
+                            "default" : 1,
+                            "min": 0,
+                            "max": 1
+                        },
+                        "state" : {
+                            "value" : 1,
+                            "at": "2014-08-29T15:01:49.445Z"
+                        }
+                    },
+                    {
+                        "id" : "npjTQsoDfbQ8tMyDE1TIlXp_112_1_34_1",
+                        "name": "112_1_34_1",
+                        "is" : "actuator",
+                        "style": "config",  
+                        "label" : "Reaction to Alarm",
+                        "description" : "defines the alarm types the plug reacts to. Set value may be a sum of available values, e.g. set value = 5 means the Plug will respond to general alarm (1) and CO alarm (4).",
+                        "profile" : { 
+                            "type" : "int",
+                            "default" : 63,
+                            "values": [ 1, 2, 4, 8, 16, 32, 63 ],
+                            "labels" : [ {
+                                    "label" : "General Alarm",
+                                    "value" : 1
+                                }, {
+                                    "label" : "Smoke Alarm",
+                                    "value" : 2
+                                }, {
+                                    "label" : "CO Alarm",
+                                    "value" : 4
+                                }, {
+                                    "label" : "CO2 Alarm",
+                                    "value" : 8
+                                }, {
+                                    "label" : "High Temperature Alarm",
+                                    "value" : 16
+                                }, {
+                                    "label" : "Flood Alarm",
+                                    "value" : 32
+                                }, {
+                                    "label" : "All Alarms",
+                                    "value" : 63
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+
+### Get a Device [GET]
+
++ Request
+
+    + Header 
+    
+            Authorization: Bearer some_encrypted_token_value
+            
++ Response 200
+
+    [Device][]
+
+ 
+### DRAFT: Replace Device [PUT]
+
+To connect a Device, send the whole device state. Use connect if you are not sure if the Device resource with specified `id` already exists or you need to create it at this point.
+Semantically, this will replace the already existing Device resource, so use it carefully.
+
+Z-Wave
+Controller client can use this method after successful inclusion of a node with ensured unique ID
+
++ Request 
+
+    + Header
+    
+            Authorization: Bearer some_encrypted_token_value
+    
+    + Body
+    
+            {
+                "name": "Device A2",
+            }
+
++ Response 201
+
+    [Device][]
+    
++ Response 200
+            
+
+
+### DRAFT: Remove Device [DELETE]
+
+#### Z-Wave usage
+
+- Controller client can use this method after exclusion of a node.
+
++ Request (application/json)
+    
+    + Header
+    
+            Authorization: Bearer some_encrypted_token_value
+
++ Response 204
+    
+
+## Devices [/device{?gatewayId,new}]
+Collection of all devices owned by authorized user account
+
+
++ Parameters
+    + gatewayId (optional, string, `gateway-A`) ... Query parameter. When specified returns collection of devices associated with specified gateway
+    + new (optional) ... Add this tag in parameter list to retrieve only new devices, those that are included in the last dozen of seconds
+
+
+### Get Devices collection [GET]
+
+Returns collection of Devices owned by authorized user account. 
+
++ Request (application/json)
+
+    + Header
+
+            Authorization: Bearer some_encrypted_token_value
+
+
++ Response 200
+
+        [
+            {
+                "id": "device-id1",
+                "name": "Wall Plug",
+                "description": null,
+                "gatewayId": "53f7345a3c54ec17f4d9c08b",
+                "createdBy": "53f7345a3c54ec17f4d9c087",
+                "createdOn": "0001-01-01T00:00:00Z",
+                "iconKey" : "binary-switch",
+                "control": {
+                    "type": "binary-switch",
+                    "profile": {
+                        "type": "bool"
+                    },
+                    "links": [
+                        { "name": "get", "url": "/asset/npjTQsoDfbQ8tMyDE1TIlXp_asset_01/state" },
+                        { "name": "set", "url": "/asset/npjTQsoDfbQ8tMyDE1TIlXp_asset_01/command" }
+                    ],
+                    "state": {
+                        "value": true,
+                        "at": "2014-08-29T15:01:49.445Z"
+                    }
+                },
+                "assets": [
+                    {
+                        "id": "npjTQsoDfbQ8tMyDE1TIlXp_asset_01",
+                        "name": "asset_01",
+                        "style": "primary",
+                        "label": "Power Switch",
+                        "description": "...",
+                        "profile": {
+                            "type": "boolean"
+                        },
+                        "state" : {
+                            "value" : true,
+                            "at": "2014-08-29T15:01:49.445Z"
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "device-id2",
+                "name": "Flood sensor",
+                "description": null,
+                "gatewayId": "53f7345a3c54ec17f4d9c08b",
+                "createdBy": "53f7345a3c54ec17f4d9c087",
+                "createdOn": "0001-01-01T00:00:00Z",
+                "iconKey" : "binary-sensor",
+                "control": {
+                    "type": "binary-sensor",
+                    "profile": {
+                        "type": "bool"
+                    },
+                    "links": [
+                        { "name": "get", "url": "/asset/npjTQsoDfbQ8tMyDE1TIlXp_asset_02/state" }
+                    ],
+                    "state": {
+                        "value": true,
+                        "at": "2014-08-29T15:01:49.445Z"
+                    }
+                },
+                "assets": [
+                    {
+                        "id": "npjTQsoDfbQ8tMyDE1TIlXp_asset_02",
+                        "name": "asset_01",
+                        "style": "primary",
+                        "label": "Power Switch",
+                        "description": "...",
+                        "profile": {
+                            "type": "boolean"
+                        },
+                        "state" : {
+                            "value" : true,
+                            "at": "2014-08-29T15:01:49.445Z"
+                        }
+                    }
+                ]
+            }
+        ]
+
+## Devices [/device]
+
+### Create Device [POST]
+
+Z-Wave Controller can use this method to add freshly included node to CAPP as a Device resource. 
+
+#### Options
+
+- Add `X-Zwave-Generic-Class` header to annotate the number for Zwave specs Device Generic Class
+
+    | Value     | Device Type           | 
+    | ---       |:-------------:        | 
+    | 16        | Binary Switch         |
+    | 32        | Binary Sensor         |
+    | 161       | Alarm (Smoke,Flood)   |
+
+
++ Request (application/json)
+
+    + Header
+    
+            Auth-GatewayId: gateway-A
+            Auth-GatewayKey: ffedsseraa23sdda
+    
+    + Body
+    
+            {
+                "gatewayId": "gateway-A",
+                "name": "Device A1",
+                "description": "Device A1 Description"
+            }
+            
++ Response 201
+
+    [Device][]
+    
+    
+# Group Assets
+
+## Device Assets [/device/{id}/assets]
+
++ Parameters
+    + id (required, string, `5405e0b8fc01be05b437456a`) ... Device identifier
+
+### Add Asset [POST]
+
+Adds Asset to a Device resource
+
+#### Options
+
+- Add `X-Zwave-Command-Class` header to annotate the number for Zwave specs Command Class
+
+    | Value     | Asset Type        | 
+    | ---       |:-------------:    | 
+    | 37        | Binary Switch     |
+    | 48        | Binary Sensor     |
+
++ Request (application/json)
+    
+    + Body
+    
+            {
+                "name": "asset_03",
+                "profile": {
+                    "type": "int"
+                }
+            }
+
++ Response 201
+
+    + Header
+    
+            Location: /asset/5405e0b8fc01be05b437456a_asset_03
+
+    + Body
+    
+            [Asset][]
+
+## Asset [/asset/{id}]
+
++ Parameters
+    + id (required, string, `5405e0b8fc01be05b437456a_asset_03`) ... Asset identifier
+    
++ Model
+
+        {
+            "id": "5405e0b8fc01be05b437456a_asset_03",
+            "name": "Sensor One",
+            "is": "sensor",
+            "description": null,
+            "createdOn": "2014-09-22T11:24:29.896Z",
+            "createdBy": null,
+            "updatedOn": "2014-09-22T11:24:29.896Z",
+            "updatedBy": null,
+            "profile": {
+                "type": "bool"
+            },
+            "state": null,
+            "style": "primary"
+        }
+
+### Get Asset [GET]
+
+Retrieves Asset resource
+
++ Request (application/json)
+
+    + Header
+
+            Authorization: Bearer some_encrypted_token_value
+            
++ Response 200
+
+    + Body
+    
+            [Asset][]
+            
+            
+### Update Asset [PUT]
+
+Updates an Asset or creates one if it does not exist (in which case 'deviceId' field is reqquired in request body).
+Returns 200 OK no matter if the Asset is created or updated
+
++ Request (application/json)
+
+    + Header
+
+            Auth-GatewayId: gateway_client_id
+            Auth-GatewayKey: gateway_client_key
+
+    + Body
+        
+            {
+                "deviceId": "5405e0b8fc01be05b437456a",
+                "name": "New asset name",
+                "profile": {
+                    "type": "int"
+                }
+            }
+            
++ Response 200
+
+            [Asset][]
+
+     
+## Asset State [/asset/{id}/state]
+
+Get or Set asset state by asset Id
+        
++ Parameters
+    + id (required, string, `5405e0b8fc01be05b437456a_asset_03`) ... Asset identifier. When specified returns state value for that asset
+    
+
+### Get Asset state [GET]
+
+Gets asset latest (or current) state
+
++ Request (application/json)
+
+    + Header
+
+            Authorization: Bearer some_encrypted_token_value
+
++ Response 200
+
+    + Body
+                
+            {
+                "id": "5405e0b8fc01be05b437456a_asset_03",
+                "state": {
+                    "value" : false,
+                    "at" :  "2012-04-23T18:25:43.511Z"
+                }
+            }
+            
++ Response 304
+
+
+### Publish Asset state [PUT]
+
++ Request (application/json)
+
+    + Header
+
+            Authorization: Bearer some_encrypted_token_value
+
+    + Body
+                
+            {
+                "value" : true,
+            }
+            
++ Response 200
+
++ Response 400
+
+        {
+            "message" : [
+                            { 
+                                "error" : "some error text." 
+                            },  
+                            { 
+                                "error" : "some error text 2." 
+                            }   
+                        ],
+            "developerMessage": "A message used for debugging purposes",
+            "plainErrors": "some error text. some error text 2.",
+            "state": {
+                        "some_property_name":{
+                                    "value": null,
+                                    "errors": [
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text."
+                                                  },
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text 2."
+                                                  }
+                                              ]
+                                }
+                    }
+        }
+
+        
+
+## Asset States [/asset/{id}/states/{filter}]
+
+Get or set state of a specific device. State is represented as a simple Value, At pair  
+Filter possible value: `past-1h`, `past-4h`, `past-24h`, `today`, `yesterday`, `last-week`, `last-month`, `last-year`, `this-week`, `this-month`, `this-year`
+        
++ Parameters
+    + id (required, string, `5405e0b8fc01be05b437456a_asset_03`) ... Asset identifier. Returns states for that asset
+    + filter (optional, string, `last-1h`) ... Filter identifier, filter is optional 
+
+### Get historical Asset States [GET]
+
+get device state readings, array of readings, and way to get more 
+REMARK: Consider adding asset id in response body
+
++ Request 
+
+    + Header
+
+            Authorization: Bearer client_token
+    
++ Response 200
+
+    + Body
+        
+            {            
+                "data" : [
+                    {
+                        'value' : <>,
+                        'at' :  '12-01-2012T12:01'
+                    },
+                    {
+                        'value' : <>,
+                        'at' :  '12-01-2012T12:02'
+                    },
+                    {
+                        'value' : <>,
+                        'at' :  '12-01-2012T12:03'
+                    },
+                    {
+                        'value' : <>,
+                        'at' :  '12-01-2012T12:04'
+                    },
+                    {
+                        'value' : <>,
+                        'at' :  '12-01-2012T12:05'
+                    },
+                    {
+                        'value' : <>,
+                        'at' :  '12-01-2012T12:14'
+                    },
+                ],
+                "paging" : {
+                    "previous": "/asset/{id}/states?from=12-01-2014T12:01&to=12-01-2015T12:01&step=1",
+                    "next": "/asset/{id}/states?from=12-01-2014T12:01&to=12-01-2015T12:01&step=1"
+                }
+            }
+            
+            
+### DRAFT: Publish bulk Asset States [PUT]
+
+Client can use this method to publish more than one device state reading (e.g. when gateway app buffers readings and than flush them)
+
++ Request
+
+    + Body 
+    
+            [
+                {
+                    'value' : <>
+                    'at' :  '12-01-2012T12:14'
+                },
+                {
+                    'value' : <>
+                    'at' :  '12-01-2012T12:14'
+                },
+                {
+                    'value' : <>
+                    'at' :  '12-01-2012T12:14'
+                }
+            ]
+            
++ Response 200
+
+
+## Asset Command [/asset/{id}/command]
+
++ Parameters
+    + id (required, string, `5405e0b8fc01be05b437456a_asset_03`) ... Asset identifier
+
+### Publish Asset Command [PUT]
+
+**NOTE** This API method is usually called by Client app to publish command (users intention) to change asset state
+
++ Request 
+
+   + Body
+   
+            {
+                "value" : true
+            }
+
++ Response 200
+
+# Group Places
+
+## Authorized User Places [/places]
+
+### Get Authorized User Places [GET]
+
++ Request (application/json)
+
+    + Header
+
+            Authorization: Bearer demo_encrypted_token_value
+            
++ Response 200 (application/json)
+
+        [
+            {
+                "id": "demop0",
+                "name": "Home",
+                "center": {
+                    "latitude": 44.8167,
+                    "longitude": 20.4667
+                },
+                "radius": 20
+            },
+            {
+                "id": "demop1",
+                "name": "My Place 2",
+                "center": {
+                    "latitude": 44.8167,
+                    "longitude": 20.4667
+                },
+                "radius": 20
+            },
+            {
+                "id": "demop2",
+                "name": "My Place 3",
+                "center": {
+                    "latitude": 44.8167,
+                    "longitude": 20.4667
+                },
+                "radius": 20
+            }
+        ]
+        
+
+### Create Place [POST]
+
+WARNING: this method URL is `/place` instead of `/places`. This will be changed with next release this evening
+
++ Request (application/json)
+
+    + Header 
+    
+            Authorization: Bearer admin_encrypted_token_value
+
+    + Body 
+    
+            {
+                "name": "New Place",
+                "center": {
+                    "latitude": 44.8167,
+                    "longitude": 20.4667
+                },
+                "radius": 20
+            }
+            
++ Response 200
+
+    + Body
+    
+            {
+                "id": "demop3",
+                "name": "New Place",
+                "center": {
+                    "latitude": 44.8167,
+                    "longitude": 20.4667
+                },
+                "radius": 20
+            }
+          
+## Place [/place/{id}]  
+
++ Parameters
+    + id (required, string, `demop2`) ... Place identifier
+    
+
+### Get Place [GET]
+
+Gets  a place. 
+
++ Request (application/json)
+
+    + Header 
+    
+            Authorization: Bearer admin_encrypted_token_value
+            
++ Response 200
+
+    + Body
+    
+            {
+                "id": "demop2",
+                "name": "My Place 3",
+                "center": {
+                    "latitude": 44.8167,
+                    "longitude": 20.4667
+                },
+                "radius": 20
+            }
+
+### Update Place [POST]
+
+Updates a place. Provide only fields that you want to be updated.
+
++ Request (application/json)
+
+    + Header 
+    
+            Authorization: Bearer admin_encrypted_token_value
+
+    + Body 
+    
+            {
+                "name": "Not just a dummy place",
+                "center": {
+                    "latitude": 44.5555,
+                    "longitude": 20.6666
+                },
+                "radius": 30
+            }
+            
++ Response 200
+
+    + Body
+    
+            {
+                "id": "demop2",
+                "name": "Not just a dummy place",
+                "center": {
+                    "latitude": 44.5555,
+                    "longitude": 20.6666
+                },
+                "radius": 30
+            }
+
+### Delete Place [DELETE]
+
++ Request (application/json)
+
+    + Header 
+    
+            Authorization: Bearer token_value
+            
++ Response 204
+
+
+# Group User Movement
+
+## Movement [/movement]
+
+Represents an action of moving authenticated User in or out of a certain Place
+    
+
+### DRAFT: Publish Movement [PUT]
+
++ Request (application/json)
+
+    + Header
+
+            Authorization: Bearer admin_encrypted_token_value
+ 
+    + Body
+    
+            {
+                "placeId": "demop2",
+                "state": "in"
+            }
+
++ Response 200
+
+# Group Notifications
+
+## Notify [/notify/push]
+
+**NOTE** This is a TEST API and it will not be available in production.
+
+### Publish push notification to user smartphone [POST]
+
+**NOTE** This API method is usually called by Developer (TEST intention) to test if Push Notification registration is working
+- `message` (Required - This is text message to be send as a Push Notification)
+- `username` (Required - Username of the user that is logged in on the device)
+
++ Request (application/json)
+
+   + Body
+   
+            {
+                "message" : "Text message that will be sent to the smartphone",
+                "username" : "some_username"
+            }
+
++ Response 200
+
++ Response 400
+
+        {
+            "message" : [
+                            { 
+                                "error" : "some error text." 
+                            },  
+                            { 
+                                "error" : "some error text 2." 
+                            }   
+                        ],
+            "developerMessage": "A message used for debugging purposes",
+            "plainErrors": "some error text. some error text 2.",
+            "state": {
+                        "some_property_name":{
+                                    "value": null,
+                                    "errors": [
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text."
+                                                  },
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text 2."
+                                                  }
+                                              ]
+                                }
+                    }
+        }
+
+## Subscribe to notifications [/notification/push/subscribe]
+
+Both Android and iOS clients should call this method if they want to register for Push Notification messages. It is requred to pass 3 parameters : "handle", "type" and "deviceId"
+
+### Subscribe for Push Notifications [POST]
+
+- `handle` (Required - This is obtained from the Notification Service Provider Google or Apple)
+- `type` (Required -Type of device only 2 possible values : "gcm" for Android or "apns" for Apple)
+- `deviceId` (Required -Unique device identifier - eg. UUID of the device), please NOTE that this field is different than Device resource `id` field
+
+
++ Request (application/json)
+
+    + Header
+
+            Authorization: Bearer admin_encrypted_token_value
+    
+    + Body
+    
+            {
+                "handle": "8ggttrfdfdf-frfsssffsf333saddsd55v4v455v444",
+                "type": "apns",
+                "deviceId": "1122sswa21121sssaas1111ssdsd-22detgbb-wwsasa"
+            }
+
++ Response 200
+
++ Response 400
+
+        {
+            "message" : [
+                            { 
+                                "error" : "some error text." 
+                            },  
+                            { 
+                                "error" : "some error text 2." 
+                            }   
+                        ],
+            "developerMessage": "A message used for debugging purposes",
+            "plainErrors": "some error text. some error text 2.",
+            "state": {
+                        "some_property_name":{
+                                    "value": null,
+                                    "errors": [
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text."
+                                                  },
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text 2."
+                                                  }
+                                              ]
+                                }
+                    }
+        }
+
+# Group Team
+
+## Manage Teams [/teams]
+
+### Create a new Team [POST]
+
+Create new Team for authorized user. This will add authorized user as member and owner of the Team
+
++ Request (application/json)
+
+    + Header 
+    
+            Authorization: Bearer user_encrypted_token_value
+
+    + Body 
+    
+            {
+                "name":"Some name for the Team"
+            }
+
++ Response 201
+
+            {
+                "id": "5439204f3c54ec1c30d6f409",
+                "name": "Some name for the Team",
+                "createdOn": "2014-10-11T12:19:26.1113282Z",
+                "createdBy": "5412eab3da8ab71d14b9dc87",
+                "updatedOn": "0001-01-01T00:00:00",
+                "updatedBy": null,
+                "lastActivity": "2014-10-11T12:19:26.1113282Z",
+                "members": [
+                    {
+                        "id": "5439204f3c54ec1c30d6f40a",
+                        "teamId": "5439204f3c54ec1c30d6f409",
+                        "isUserTeamOwner": true,
+                        "member": {
+                            "fullName": "Nemanja",
+                            "lastActive": "2014-10-11T12:19:27.022Z"
+                        },
+                        "status": 2,
+                        "createdByFullName": null,
+                        "createdByEmail": null,
+                        "numberOfTimesInvited": 0
+                    }
+                ],
+                "numberOfMembers": 1,
+                "isUserJoined": true,
+                "isUserTeamOwner": true,
+                "teamMemberId": "5439204f3c54ec1c30d6f40a"
+            }
+        
++ Response 400
+
+        {
+            "message" : [
+                            { 
+                                "error" : "some error text." 
+                            },  
+                            { 
+                                "error" : "some error text 2." 
+                            }   
+                        ],
+            "developerMessage": "A message used for debugging purposes",
+            "plainErrors": "some error text. some error text 2.",
+            "state": {
+                        "some_property_name":{
+                                    "value": null,
+                                    "errors": [
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text."
+                                                  },
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text 2."
+                                                  }
+                                              ]
+                                }
+                    }
+        }            
+
+### Get Teams for user [GET]
+
+Get Teams for authorized user. This will retrive all Teams user belongs to. User belongs to teams he created, or was invited to.
+
++ Request (application/json)
+
+    + Header 
+    
+            Authorization: Bearer user_encrypted_token_value
+
+
++ Response 200
+
+        [
+            {
+                "id": "543668383c54ec0c3c75ddf1",
+                "name": "Family",
+                "createdOn": "2014-10-09T10:49:28.772Z",
+                "createdBy": null,
+                "updatedOn": "0001-01-01T00:00:00",
+                "updatedBy": null,
+                "lastActivity": "0001-01-01T00:00:00",
+                "members": null,
+                "numberOfMembers": 4,
+                "isUserJoined": true,
+                "isUserTeamOwner": true,
+                "teamMemberId": "543fce323c54ec0eac833fe2"
+            },
+            {
+                "id": "543911b83c54ec1b5045faed",
+                "name": "Other team",
+                "createdOn": "2014-10-11T11:17:05.458Z",
+                "createdBy": "5412eab3da8ab71d14b9dc87",
+                "updatedOn": "0001-01-01T00:00:00Z",
+                "updatedBy": null,
+                "lastActivity": "0001-01-01T00:00:00",
+                "members": null,
+                "numberOfMembers": 1,
+                "isUserJoined": true,
+                "isUserTeamOwner": true,
+                "teamMemberId": "543fce323c54ec0eac833fe3"
+            }
+        ]
+        
++ Response 400
+
+        {
+            "message" : [
+                            { 
+                                "error" : "some error text." 
+                            },  
+                            { 
+                                "error" : "some error text 2." 
+                            }   
+                        ],
+            "developerMessage": "A message used for debugging purposes",
+            "plainErrors": "some error text. some error text 2.",
+            "state": {
+                        "some_property_name":{
+                                    "value": null,
+                                    "errors": [
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text."
+                                                  },
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text 2."
+                                                  }
+                                              ]
+                                }
+                    }
+        }            
+
+## Modify Team [/team/{id}]
+
++ Parameters
+    + id (required, string, `543656903c54ec11c014f625`) ... Team identifier, Id value of the Team
+
+### Get details for Team [GET]
+
+Get full details for the existing Team by owner or member. This will only be possible for authorized user that is owner of the team or a member of the team
+
++ Request (application/json)
+
+    + Header 
+    
+            Authorization: Bearer user_encrypted_token_value
+            
++ Response 200
+
+        {
+            "id": "54393ae53c54ec13d4c3f619",
+            "name": "moj tim",
+            "createdOn": "2014-10-11T14:12:52.166Z",
+            "createdBy": "5412eab3da8ab71d14b9dc87",
+            "updatedOn": "0001-01-01T00:00:00Z",
+            "updatedBy": null,
+            "lastActivity": "2014-10-11T14:12:52.166Z",
+            "members":  [
+                {
+                    "id": "54393ae53c54ec13d4c3f61a",
+                    "teamId": "54393ae53c54ec13d4c3f619",
+                    "isUserTeamOwner": true,
+                    "member":   
+                        {
+                            "fullName": "Nemanja",
+                            "lastActive": "2014-10-11T14:12:53.34Z"
+                        },
+                    "status": 2,
+                    "createdByFullName": null,
+                    "createdByEmail": null,
+                    "numberOfTimesInvited": 0
+                },
+                {
+                    "id": "543943b53c54ec13942d0396",
+                    "teamId": "54393ae53c54ec13d4c3f619",
+                    "isUserTeamOwner": false,
+                    "member":   
+                        {
+                            "fullName": "Nikola",
+                            "lastActive": "2014-10-11T14:50:24.973Z"
+                        },
+                    "status": 1,
+                    "createdByFullName": "Nemanja",
+                    "createdByEmail": "na@allthingstalk.com",
+                    "numberOfTimesInvited": 1
+                }
+            ],
+            "numberOfMembers": 2,
+            "isUserJoined": true,
+            "isUserTeamOwner": true,
+            "teamMemberId": "54393ae53c54ec13d4c3f61a"
+        }
+
++ Response 400
+
+        {
+            "message" : [
+                            { 
+                                "error" : "some error text." 
+                            },  
+                            { 
+                                "error" : "some error text 2." 
+                            }   
+                        ],
+            "developerMessage": "A message used for debugging purposes",
+            "plainErrors": "some error text. some error text 2.",
+            "state": {
+                        "some_property_name":{
+                                    "value": null,
+                                    "errors": [
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text."
+                                                  },
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text 2."
+                                                  }
+                                              ]
+                                }
+                    }
+        } 
+        
+        
+### Update name for the Team [POST]
+
+Update name of the existing team by the owner. This will only be possible for authorized user that is owner of the team
+
++ Request (application/json)
+
+    + Header 
+    
+            Authorization: Bearer user_encrypted_token_value
+
+    + Body 
+    
+            {
+                "name":"Some new name for the Team"
+            }
+
++ Response 200
+
++ Response 400
+
+        {
+            "message" : [
+                            { 
+                                "error" : "some error text." 
+                            },  
+                            { 
+                                "error" : "some error text 2." 
+                            }   
+                        ],
+            "developerMessage": "A message used for debugging purposes",
+            "plainErrors": "some error text. some error text 2.",
+            "state": {
+                        "some_property_name":{
+                                    "value": null,
+                                    "errors": [
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text."
+                                                  },
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text 2."
+                                                  }
+                                              ]
+                                }
+                    }
+        }            
+
+### Delete Team and Team members [DELETE]
+
+Delete the existing team and all team Members for that team by the owner. This will only be possible for authorized user that is owner of the team. 
+
++ Request (application/json)
+
+    + Header 
+    
+            Authorization: Bearer user_encrypted_token_value
+
++ Response 204
+
++ Response 400
+
+        {
+            "message" : [
+                            { 
+                                "error" : "some error text." 
+                            },  
+                            { 
+                                "error" : "some error text 2." 
+                            }   
+                        ],
+            "developerMessage": "A message used for debugging purposes",
+            "plainErrors": "some error text. some error text 2.",
+            "state": {
+                        "some_property_name":{
+                                    "value": null,
+                                    "errors": [
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text."
+                                                  },
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text 2."
+                                                  }
+                                              ]
+                                }
+                    }
+        }            
+
+## Manage Team Members [/team/{id}/members]
+
++ Parameters
+    + id (required, string, `543656903c54ec11c014f625`) ... Team identifier, Id value of the Team that member is invited to
+
+### Create Team Invitation [POST]
+
+Create Team invitation. This will invite member to join the Team
+**NOTE** `status` (Response value of the invitation, only 3 possible values : 1 - "Invited", 2 - "Joined", 3 - "Rejected")
+
++ Request (application/json)
+
+    + Header 
+    
+            Authorization: Bearer user_encrypted_token_value
+
+    + Body 
+    
+            {
+                "email":"npaaaa@allthingstalk.com"
+            }
+            
++ Response 200
+
+        {
+            "id": "543657c13c54ec11c014f640",
+            "teamId": "543656903c54ec11c014f625",
+            "isUserTeamOwner": false,
+            "member": {
+                "fullName": "Nikola",
+                "lastActive": "2014-10-09T09:37:27.01Z"
+            },
+            "status": 1,
+            "createdByFullName": "Nemanja",
+            "createdByEmail": "na@allthingstalk.com",
+            "numberOfTimesInvited": 2
+        }
+
++ Response 201
+
+        {
+            "id": "543657c13c54ec11c014f640",
+            "teamId": "543656903c54ec11c014f625",
+            "isUserTeamOwner": false,
+            "member": {
+                "fullName": "npaaaa@allthingstalk.com",
+                "lastActive": null
+            },
+            "status": 1,
+            "createdByFullName": "Nemanja",
+            "createdByEmail": "na@allthingstalk.com",
+            "numberOfTimesInvited": 1
+        }
+
++ Response 400
+
+        {
+            "message" : [
+                            { 
+                                "error" : "some error text." 
+                            },  
+                            { 
+                                "error" : "some error text 2." 
+                            }   
+                        ],
+            "developerMessage": "A message used for debugging purposes",
+            "plainErrors": "some error text. some error text 2.",
+            "state": {
+                        "some_property_name":{
+                                    "value": null,
+                                    "errors": [
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text."
+                                                  },
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text 2."
+                                                  }
+                                              ]
+                                }
+                    }
+        }
+
+## Modify Team Members [/team/{id}/member/{membershipId}]
+
++ Parameters
+    + id (required, string, `543656903c54ec11c014f625`) ... Team identifier, Id value of the Team that member is invited to
+    + membershipId (required, string, `543668833c54ec0c3c75de0b`) ... TeamMember identifier, Id value of the TeamMember
+    
+### Accept or Reject Team Invitation [PUT]
+
+Accept or Reject Team invitation. This will set TeamMember invitation in status 'Joined' or 'Rejected'
+**NOTE** `status` (Request value of the responding to invitatation, only 2 possible values : "accept" or "reject")
+
++ Request (application/json)
+
+    + Header 
+    
+            Authorization: Bearer user_encrypted_token_value
+
+    + Body 
+    
+            {
+                "status":"accept"
+            }
+            
++ Response 200
+
++ Response 400
+
+        {
+            "message" : [
+                            { 
+                                "error" : "some error text." 
+                            },  
+                            { 
+                                "error" : "some error text 2." 
+                            }   
+                        ],
+            "developerMessage": "A message used for debugging purposes",
+            "plainErrors": "some error text. some error text 2.",
+            "state": {
+                        "some_property_name":{
+                                    "value": null,
+                                    "errors": [
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text."
+                                                  },
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text 2."
+                                                  }
+                                              ]
+                                }
+                    }
+        }
+        
+### Delete Team Membership or Invitation [DELETE]
+
+Delete the existing team member by the owner of the Team or by the owner of the Membership (Member user by it self). This will only be possible for authorized user that is owner of the team or owner of the Membership. 
+
++ Request (application/json)
+
+    + Header 
+    
+            Authorization: Bearer user_encrypted_token_value
+
++ Response 204
+
++ Response 400
+
+        {
+            "message" : [
+                            { 
+                                "error" : "some error text." 
+                            },  
+                            { 
+                                "error" : "some error text 2." 
+                            }   
+                        ],
+            "developerMessage": "A message used for debugging purposes",
+            "plainErrors": "some error text. some error text 2.",
+            "state": {
+                        "some_property_name":{
+                                    "value": null,
+                                    "errors": [
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text."
+                                                  },
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text 2."
+                                                  }
+                                              ]
+                                }
+                    }
+        }
+
+# Group Admin
+
+## Admin Gateways Collection [/admin/gateway]
+
+Collection of all gateways visible only to admin user
+
+### List Gateways for authenticated admin user [GET]
+
++ Request (application/json)
+
+    + Header
+
+            Authorization: Bearer admin_encrypted_token_value
+
++ Response 200 (application/json)
+
+        [{
+            "id": "gateway-A", "uid": "gateway-A-uid", "name": "Gateway A", "description": "Description A", "devices": [], "key": "fsdfefeseqeddxx"
+        }, {
+            "id": "gateway-B", "uid": "gateway-B-uid", "name": "Gateway B", "description": "Description B", "devices": [], "key": "aswxwdawssswaat"
+        }]
+
++ Response 401
+
+
+## Admin delete Gateway [/admin/gateway/{id}]
+
+Admin user can delete any Gateway by it's id
+
++ Parameters
+    + id (required, string, `gateway-A`) ... String `id` of the Gateway to perform action with. Has example value.
+
+### Delete Gateway by gateway id [DELETE]
+
++ Request (application/json)
+    
+    + Header
+    
+            Authorization: Bearer admin_encrypted_token_value
+
++ Response 204
+
++ Response 404
+    
