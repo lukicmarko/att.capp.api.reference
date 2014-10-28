@@ -1604,6 +1604,162 @@ Both Android and iOS clients should call this method if they want to register fo
                     }
         }
 
+## Subscribe for event Notifications [/notification/{type}/{id}/subscription]
+
+User can subscribe for different type of events and be notified via email, website or push notification when event is triggered.
+We currently support following event types: 'LocationTracking', 'MemberInOutPlace'
+
++ Parameters
+    + type (required, string, `LocationTracking`) ... Type of subscription can be one of following: 'LocationTracking'
+    + id (required, string, `np_lt_npp0`) ... Identifier of the event type resource in case of type 'LocationTracking'` this is LocationTrackingId, in case of type 'MemberInOutPlace' this is MembershipId
+    
+### Get subscription for event notification [GET]
+
++ Request (application/json)
+
+    + Header
+
+            Authorization: Bearer admin_encrypted_token_value
+            
++ Response 200
+
+        {
+            "observableType": "locationtracking",
+            "observableId": "np_lt_npp0",
+            "subscribeForWebNotifications": true,
+            "subscribeForEmailNotifications": true,
+            "subscribeForPushNotifications": true
+        }
+
++ Response 200
+
++ Response 400
+
+        {
+            "message" : [
+                            { 
+                                "error" : "some error text." 
+                            },  
+                            { 
+                                "error" : "some error text 2." 
+                            }   
+                        ],
+            "developerMessage": "A message used for debugging purposes",
+            "plainErrors": "some error text. some error text 2.",
+            "state": {
+                        "some_property_name":{
+                                    "value": null,
+                                    "errors": [
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text."
+                                                  },
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text 2."
+                                                  }
+                                              ]
+                                }
+                    }
+        }
+
+
+### Subscribe or update existing subscription for event notifications [PUT]
+
++ Request (application/json)
+
+    + Header
+
+            Authorization: Bearer admin_encrypted_token_value
+    
+    + Body
+    
+            {
+                "subscribeForWebNotifications": true,
+                "subscribeForPushNotifications": true,
+                "subscribeForEmailNotifications": true
+            }
+
++ Response 200
+
+        {
+            "observableType": "locationtracking",
+            "observableId": "np_lt_npp0",
+            "subscribeForWebNotifications": true,
+            "subscribeForEmailNotifications": true,
+            "subscribeForPushNotifications": true
+        }
+
++ Response 400
+
+        {
+            "message" : [
+                            { 
+                                "error" : "some error text." 
+                            },  
+                            { 
+                                "error" : "some error text 2." 
+                            }   
+                        ],
+            "developerMessage": "A message used for debugging purposes",
+            "plainErrors": "some error text. some error text 2.",
+            "state": {
+                        "some_property_name":{
+                                    "value": null,
+                                    "errors": [
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text."
+                                                  },
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text 2."
+                                                  }
+                                              ]
+                                }
+                    }
+        }
+
+### Delete existing subscription for event notifications [DELETE]
+
++ Request (application/json)
+
+    + Header
+
+            Authorization: Bearer admin_encrypted_token_value
+
++ Response 204
+
++ Response 400
+
+        {
+            "message" : [
+                            { 
+                                "error" : "some error text." 
+                            },  
+                            { 
+                                "error" : "some error text 2." 
+                            }   
+                        ],
+            "developerMessage": "A message used for debugging purposes",
+            "plainErrors": "some error text. some error text 2.",
+            "state": {
+                        "some_property_name":{
+                                    "value": null,
+                                    "errors": [
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text."
+                                                  },
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text 2."
+                                                  }
+                                              ]
+                                }
+                    }
+        }
+
 # Group Team
 
 ## Manage Teams [/teams]
