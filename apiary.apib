@@ -84,6 +84,22 @@ Register new user account
                     }
         }
 
+
+## Account Activation [/account/activation{?token}]
+
++ Parameters
+    + token (required, string) ... Account activation token 
+
+
+### Activate Account [PUT]
+
+Activate account after registration. You must provide valid activation `token` that is usually found in activation email.
+
++ Response 200
+
++ Response 400
+
+
 ## OAuth2 Token [/login]
 Retrieve new access token or refresh existing access token for registered user account.
 There are 2 types of POST /login calls:
