@@ -2437,7 +2437,7 @@ Get all devices for this Team. Request is valid for all Team members
 + Parameters
     + id (required, string, `544e75c43c54ec15a80a167b`) ... Team identifier, Id value of the Team 
 
-### Get team devices [GET]
+### Get team gateways [GET]
 
 Get all gateways for this Team. Request is valid for all Team members
 
@@ -2462,6 +2462,89 @@ Get all gateways for this Team. Request is valid for all Team members
                     "control": {
                         "widgetUrl": "http://www.pepper1.net/zwavedb/uploads/resources/142203b945a49094d99ab2f3ab8647e27c994cd8.jpg"
                     }
+                }
+            ],
+            "paging": {}
+        }
+
++ Response 400
+
+        {
+            "message" : [
+                            { 
+                                "error" : "some error text." 
+                            },  
+                            { 
+                                "error" : "some error text 2." 
+                            }   
+                        ],
+            "developerMessage": "A message used for debugging purposes",
+            "plainErrors": "some error text. some error text 2.",
+            "state": {
+                        "some_property_name":{
+                                    "value": null,
+                                    "errors": [
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text."
+                                                  },
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text 2."
+                                                  }
+                                              ]
+                                }
+                    }
+        }
+
+## Team places [/team/{id}/places]
+
++ Parameters
+    + id (required, string, `544e75c43c54ec15a80a167b`) ... Team identifier, Id value of the Team 
+
+### Get team places [GET]
+
+Get all places for this Team. Request is valid for all Team members
+
++ Request (application/json)
+
+    + Header 
+    
+            Authorization: Bearer user_encrypted_token_value
+
++ Response 200
+
+        {
+            "items": [
+                {
+                    "id": "nap0",
+                    "teamId": "544e75c33c54ec15a80a165b",
+                    "name": "Home",
+                    "center": {
+                        "latitude": 44.8167,
+                        "longitude": 20.4667
+                    },
+                    "radius": 20
+                },
+                {
+                    "id": "nap1",
+                    "teamId": "544e75c33c54ec15a80a165b",
+                    "name": "My Place 2",
+                    "center": {
+                        "latitude": 44.8167,
+                        "longitude": 20.4667
+                    },
+                    "radius": 20
+                },
+                {
+                    "id": "nap2",
+                    "teamId": "544e75c33c54ec15a80a165b",
+                    "name": "My Place 3",
+                    "center": {
+                        "latitude": 44.8167,
+                        "longitude": 20.4667
+                    },
+                    "radius": 20
                 }
             ],
             "paging": {}
