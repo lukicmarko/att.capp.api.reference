@@ -2293,6 +2293,145 @@ Delete the existing team member by the owner of the Team or by the owner of the 
                                 }
                     }
         }
+        
+## Team devices [/team/{id}/devices]
+
++ Parameters
+    + id (required, string, `544e75c43c54ec15a80a167b`) ... Team identifier, Id value of the Team 
+
+### Get team devices [GET]
+
+Get all devices for this Team. Request is valid for all Team members
+
++ Request (application/json)
+
+    + Header 
+    
+            Authorization: Bearer user_encrypted_token_value
+
++ Response 200
+
+        {
+            "items": [
+                {
+                    "id": "nag01d03",
+                    "teamId": "544e75c43c54ec15a80a167b",
+                    "name": "Bar Device",
+                    "description": null,
+                    "gatewayId": "nag01",
+                    "ownerId": "5412eab3da8ab71d14b9dc87",
+                    "createdBy": "5412eab3da8ab71d14b9dc87",
+                    "createdOn": "0001-01-01T00:00:00Z",
+                    "updatedBy": null,
+                    "updatedOn": "0001-01-01T00:00:00Z",
+                    "profile": {
+                        "DeviceImage": "http://www.pepper1.net/zwavedb/uploads/resources/142203b945a49094d99ab2f3ab8647e27c994cd8.jpg"
+                    },
+                    "control": {
+                        "type": "binary-switch",
+                        "links": [
+                            {
+                                "name": "get",
+                                "url": "/asset/nag01d03a01/state"
+                            },
+                            {
+                                "name": "set",
+                                "url": "/asset/nag01d03a01/command"
+                            }
+                        ],
+                        "state": {
+                            "at": "2014-10-27T16:41:40.121Z",
+                            "value": true
+                        },
+                        "widgetUrl": "http://www.pepper1.net/zwavedb/uploads/resources/142203b945a49094d99ab2f3ab8647e27c994cd8.jpg"
+                    },
+                    "assets": [
+                        {
+                            "id": "nag01d03s03",
+                            "name": "Sensor complex",
+                            "is": "sensor",
+                            "description": null,
+                            "createdOn": "2014-10-27T16:41:40.12Z",
+                            "createdBy": null,
+                            "updatedOn": "2014-10-27T16:41:40.12Z",
+                            "updatedBy": null,
+                            "profile": {
+                                "type": {
+                                    "field1": "int",
+                                    "field2": "string"
+                                }
+                            },
+                            "state": {
+                                "at": "2014-10-27T16:41:40.12Z",
+                                "value": {
+                                    "field1": 1,
+                                    "field2": "test"
+                                }
+                            },
+                            "style": "secondary",
+                            "control": {
+                                "widgetUrl": null
+                            }
+                        },
+                        {
+                            "id": "nag01d03a01",
+                            "name": "Actuator One",
+                            "is": "actuator",
+                            "description": null,
+                            "createdOn": "2014-10-27T16:41:40.121Z",
+                            "createdBy": null,
+                            "updatedOn": "2014-10-27T16:41:40.121Z",
+                            "updatedBy": null,
+                            "profile": {
+                                "type": "bool"
+                            },
+                            "state": {
+                                "at": "2014-10-27T16:41:40.121Z",
+                                "value": true
+                            },
+                            "style": "primary",
+                            "control": {
+                                "widgetUrl": "http://www.pepper1.net/zwavedb/uploads/resources/142203b945a49094d99ab2f3ab8647e27c994cd8.jpg"
+                            }
+                        },
+                    ],
+                    "iconKey": "wall_plug"
+                }
+            ],
+            "paging": {}
+        }
+
+
++ Response 400
+
+        {
+            "message" : [
+                            { 
+                                "error" : "some error text." 
+                            },  
+                            { 
+                                "error" : "some error text 2." 
+                            }   
+                        ],
+            "developerMessage": "A message used for debugging purposes",
+            "plainErrors": "some error text. some error text 2.",
+            "state": {
+                        "some_property_name":{
+                                    "value": null,
+                                    "errors": [
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text."
+                                                  },
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text 2."
+                                                  }
+                                              ]
+                                }
+                    }
+        }
+
 
 # Group Admin
 
