@@ -53,6 +53,23 @@ Register new user account
 
 + Response 200
 
+        {
+            "id": "545224cfda8ab71e0c80556f",
+            "username": "someusername",
+            "name": "ni5ni6",
+            "email": "someusername@someemail.com",
+            "role": "Beta",
+            "status": "AwaitingActivation",
+            "clients": [
+                {
+                    "type": "RabbitMqClient",
+                    "clientId": "someusername",
+                    "clientSecret": "mtbvdqos1gk",
+                    "vHost": "someusername-vhost"
+                }
+            ]
+        }
+
   
 + Response 400
 
@@ -85,7 +102,7 @@ Register new user account
         }
 
 
-## Account Activation [/account/activation{?token}]
+## Account Activation [/me/activation{?token}]
 
 + Parameters
     + token (required, string) ... Account activation token 
@@ -181,6 +198,36 @@ For getting access token via existing refresh token following parameters will be
             "error": "oAuth2_error_short_info",
             "error_description": "Optional full description (human readable) of the error oAuth2_error_short_info"
         }
+
+## Account [/me]
+
+### Get authenticated account [GET]
+
++ Request (application/json)
+
+    + Header
+
+            Authorization: Bearer some_encrypted_token_value
+
++ Response 200
+
+        {
+            "id": "545224cfda8ab71e0c80556f",
+            "username": "someusername",
+            "name": "ni5ni6",
+            "email": "someusername@someemail.com",
+            "role": "Beta",
+            "status": "AwaitingActivation",
+            "clients": [
+                {
+                    "type": "RabbitMqClient",
+                    "clientId": "someusername",
+                    "clientSecret": "mtbvdqos1gk",
+                    "vHost": "someusername-vhost"
+                }
+            ]
+        }
+
 
 ## Logout user account [/logout]
 
