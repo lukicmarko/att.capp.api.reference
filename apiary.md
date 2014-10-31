@@ -2671,3 +2671,50 @@ Admin user can delete any Gateway by it's id
 
 + Response 404
     
+# Group Scenarios
+
+## create scenario [post]
+uploads a scenario to the platform, activates and initializes it.  During the initialization phase the scenario is run current sensor values so that everything is initialized correctly.
+
++ Request (application/json)
+    + Header
+    
+            Authorization: Bearer admin_encrypted_token_value
+
+    + Body 
+    
+            {
+                "Name": "the name of the scenario",
+                "Description": "a description for the scenario",
+                "Definition": "string containing the scenario script (SL)" or json object definition (for scenario wizard)
+            }
+            
++ Response 200 (application/json)
+
+        {
+            "id": "id of scenario", 
+            "name": "name of scenario", 
+            "description": "description of scenario", 
+            "createdOn": "date-time at which the scenario was created", 
+            "createdBy": "id of user that created the scenario",
+            "lastModifiedOn": "date-time at which the scenario was last modified",
+            "lastModifiedBy": "id of user that last modified the scenario",
+            "isRunning": "true/false: is the scenario currently running or not",
+            "lastRunOn": "date-time at which the scenario was last executed (could be that it stopped mid execution",
+            "lastEndedOn": "date-time at which the scenario was last executed and completely finished execution",
+            "status": "The current status of the scenario, see below for possible values",
+            "runsOn": "determines where a scenario is run, currently only 'cloud' is supported",
+            "definition": "string containing the definition of the scenario, either text (scenario script), or json object"
+        }
+        
+        + status values:
+            + Undefined: initial state: when there is no code yet declared.
+            + Enabled : the scenario is ready to be run.
+            + Disabled: the scenario wont run, it has been disabled
+            + CompilationError: there was a problem while compiling the scenario, it can't yet run.
+            + MissingAssets: When in this state, the scenario is disabled because there were sensors or actuators used by this scenario that were deleted.
+        + runsOn values:
+            + Undefined: not yet known. (could be that scenario is not yet compiled)
+            + Cloud: scenario runs in the cloud.
+            + Offline: scenario is offloaded to a local devices that supports scenarios.
+        
