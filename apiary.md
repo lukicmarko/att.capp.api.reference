@@ -2707,6 +2707,7 @@ uploads a scenario to the platform, activates and initializes it.  During the in
             "definition": "string containing the definition of the scenario, either text (scenario script), or json object"
         }
         
+        
         + status values:
             + Undefined: initial state: when there is no code yet declared.
             + Enabled : the scenario is ready to be run.
