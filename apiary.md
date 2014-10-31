@@ -2709,13 +2709,13 @@ uploads a scenario to the platform, activates and initializes it.  During the in
         
         
     + status values:
-            + Undefined: initial state: when there is no code yet declared.
-            + Enabled : the scenario is ready to be run.
-            + Disabled: the scenario wont run, it has been disabled
-            + CompilationError: there was a problem while compiling the scenario, it can't yet run.
-            + MissingAssets: When in this state, the scenario is disabled because there were sensors or actuators used by this scenario that were deleted.
+        + Undefined: initial state: when there is no code yet declared.
+        + Enabled : the scenario is ready to be run.
+        + Disabled: the scenario wont run, it has been disabled
+        + CompilationError: there was a problem while compiling the scenario, it can't yet run.
+        + MissingAssets: When in this state, the scenario is disabled because there were sensors or actuators used by this scenario that were deleted.
     + runsOn values:
-            + Undefined: not yet known. (could be that scenario is not yet compiled)
-            + Cloud: scenario runs in the cloud.
-            + Offline: scenario is offloaded to a local devices that supports scenarios.
+        + Undefined: not yet known. (could be that scenario is not yet compiled)
+        + Cloud: scenario runs in the cloud.
+        + Offline: scenario is offloaded to a local devices that supports scenarios.
         
