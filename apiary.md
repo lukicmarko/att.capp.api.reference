@@ -2718,4 +2718,33 @@ uploads a scenario to the platform, activates and initializes it.  During the in
         + Undefined: not yet known. (could be that scenario is not yet compiled)
         + Cloud: scenario runs in the cloud.
         + Offline: scenario is offloaded to a local devices that supports scenarios.
-        
+
++ Response 400
+    
+        {
+            "message" : [
+                            { 
+                                "error" : "some error text." 
+                            },  
+                            { 
+                                "error" : "some error text 2." 
+                            }   
+                        ],
+            "developerMessage": "A message used for debugging purposes",
+            "plainErrors": "some error text. some error text 2.",
+            "state": {
+                        "compileErrors":{
+                                    "value": null,
+                                    "errors": [
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text."
+                                                  },
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text 2."
+                                                  }
+                                              ]
+                                }
+                    }
+        }
