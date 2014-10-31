@@ -2719,7 +2719,7 @@ uploads a scenario to the platform, activates and initializes it.  During the in
         + Cloud: scenario runs in the cloud.
         + Offline: scenario is offloaded to a local devices that supports scenarios.
 
-+ Response 400
++ Response 400: error
     
         {
             "message" : [
@@ -2757,8 +2757,88 @@ updates an already existing scenario in the platform, activates and initializes 
     
             Authorization: Bearer admin_encrypted_token_value
 
-    + Body 
-    
-        See [create scenario](#create-scenario)
+    + Body See [create scenario](#create-scenario)
         
 + Response: See [create scenario](#create-scenario)
+ 
+## delete a scenario [delete api/scenario/{id}]
+Deletes a scenario from the system.
+
++ Request
+    + Header
+    
+            Authorization: Bearer admin_encrypted_token_value
+
++ Response 204: no content, operation was successful
++ Response 404: Not found, the id could not be found
++ Response 400: error
+    
+        {
+            "message" : [
+                            { 
+                                "error" : "some error text." 
+                            },  
+                            { 
+                                "error" : "some error text 2." 
+                            }   
+                        ],
+            "developerMessage": "A message used for debugging purposes",
+            "plainErrors": "some error text. some error text 2.",
+            "state": {
+                        "compileErrors":{
+                                    "value": null,
+                                    "errors": [
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text."
+                                                  },
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text 2."
+                                                  }
+                                              ]
+                                }
+                    }
+        } 
+
+## enable or disable a scenario [post api/scenario/enabled/{id}?value]
+If you don't want a scenario to react to changes in the assets without deleting it, you can disable it, use this method. Afterwards you can enable again with the same method.
+
++ Request (application/json)
+    + Header
+    
+            Authorization: Bearer admin_encrypted_token_value
+
+    + Body See [create scenario](#create-scenario)
+        
++ Response 200 (application/json) See [create scenario](#create-scenario)
++ Response 404: Not found, the id could not be found
++ Response 400: error
+    
+        {
+            "message" : [
+                            { 
+                                "error" : "some error text." 
+                            },  
+                            { 
+                                "error" : "some error text 2." 
+                            }   
+                        ],
+            "developerMessage": "A message used for debugging purposes",
+            "plainErrors": "some error text. some error text 2.",
+            "state": {
+                        "Toggle failed":{
+                                    "value": null,
+                                    "errors": [
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text."
+                                                  },
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text 2."
+                                                  }
+                                              ]
+                                }
+                    }
+        } 
