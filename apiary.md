@@ -2673,7 +2673,7 @@ Admin user can delete any Gateway by it's id
     
 # Group Scenarios
 
-## create scenario [post]
+## create scenario [post  api/scenario]
 uploads a scenario to the platform, activates and initializes it.  During the initialization phase the scenario is run current sensor values so that everything is initialized correctly.
 
 + Request (application/json)
@@ -2748,3 +2748,17 @@ uploads a scenario to the platform, activates and initializes it.  During the in
                                 }
                     }
         }
+
+## update a scenario [put api/scenario/{id}]
+updates an already existing scenario in the platform, activates and initializes it.  During the initialization phase the scenario is run current sensor values so that everything is initialized correctly.
+
++ Request (application/json)
+    + Header
+    
+            Authorization: Bearer admin_encrypted_token_value
+
+    + Body 
+    
+        See [create scenario](#create-scenario)
+        
++ Response: See [create scenario](#create-scenario)
