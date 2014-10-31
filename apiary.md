@@ -2808,8 +2808,6 @@ If you don't want a scenario to react to changes in the assets without deleting 
     + Header
     
             Authorization: Bearer admin_encrypted_token_value
-
-    + Body See [create scenario](#create-scenario)
         
 + Response 200 (application/json) See [create scenario](#create-scenario)
 + Response 404: Not found, the id could not be found
