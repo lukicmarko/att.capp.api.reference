@@ -2671,6 +2671,177 @@ Admin user can delete any Gateway by it's id
 
 + Response 404
 
+# Group Scenarios
+
+## create scenario [post  api/scenario]
+uploads a scenario to the platform, activates and initializes it.  During the initialization phase the scenario is run with the current sensor values so that everything is initialized correctly.
+
++ Request (application/json)
+    + Header
+    
+            Authorization: Bearer admin_encrypted_token_value
+
+    + Body 
+    
+            {
+                "Name": "the name of the scenario",
+                "Description": "a description for the scenario",
+                "Definition": "string containing the scenario script (SL)" or json object definition (for scenario wizard)
+            }
+            
++ Response 200 (application/json)
+
+        {
+            "id": "id of scenario", 
+            "name": "name of scenario", 
+            "description": "description of scenario", 
+            "createdOn": "date-time at which the scenario was created", 
+            "createdBy": "id of user that created the scenario",
+            "lastModifiedOn": "date-time at which the scenario was last modified",
+            "lastModifiedBy": "id of user that last modified the scenario",
+            "isRunning": "true/false: is the scenario currently running or not",
+            "lastRunOn": "date-time at which the scenario was last executed (could be that it stopped mid execution",
+            "lastEndedOn": "date-time at which the scenario was last executed and completely finished execution",
+            "status": "The current status of the scenario, see below for possible values",
+            "runsOn": "determines where a scenario is run, currently only 'cloud' is supported",
+            "definition": "string containing the definition of the scenario, either text (scenario script), or json object"
+        }
+        
+        
+    + status values:
+        + Undefined: initial state: when there is no code yet declared.
+        + Enabled : the scenario is ready to be run.
+        + Disabled: the scenario wont run, it has been disabled
+        + CompilationError: there was a problem while compiling the scenario, it can't yet run.
+        + MissingAssets: When in this state, the scenario is disabled because there were sensors or actuators used by this scenario that were deleted.
+    + runsOn values:
+        + Undefined: not yet known. (could be that scenario is not yet compiled)
+        + Cloud: scenario runs in the cloud.
+        + Offline: scenario is offloaded to a local devices that supports scenarios.
+
++ Response 400: error
+    
+        {
+            "message" : [
+                            { 
+                                "error" : "some error text." 
+                            },  
+                            { 
+                                "error" : "some error text 2." 
+                            }   
+                        ],
+            "developerMessage": "A message used for debugging purposes",
+            "plainErrors": "some error text. some error text 2.",
+            "state": {
+                        "compileErrors":{
+                                    "value": null,
+                                    "errors": [
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text."
+                                                  },
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text 2."
+                                                  }
+                                              ]
+                                }
+                    }
+        }
+
+## update a scenario [put api/scenario/{id}]
+updates an already existing scenario in the platform, activates and initializes it.  During the initialization phase the scenario is run with the current sensor values so that everything is initialized correctly.
+
++ Request (application/json)
+    + Header
+    
+            Authorization: Bearer admin_encrypted_token_value
+
+    + Body See [create scenario](#create-scenario)
+        
++ Response: See [create scenario](#create-scenario)
+ 
+## delete a scenario [delete api/scenario/{id}]
+Deletes a scenario from the system.
+
++ Request
+    + Header
+    
+            Authorization: Bearer admin_encrypted_token_value
+
++ Response 204: no content, operation was successful
++ Response 404: Not found, the id could not be found
++ Response 400: error
+    
+        {
+            "message" : [
+                            { 
+                                "error" : "some error text." 
+                            },  
+                            { 
+                                "error" : "some error text 2." 
+                            }   
+                        ],
+            "developerMessage": "A message used for debugging purposes",
+            "plainErrors": "some error text. some error text 2.",
+            "state": {
+                        "compileErrors":{
+                                    "value": null,
+                                    "errors": [
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text."
+                                                  },
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text 2."
+                                                  }
+                                              ]
+                                }
+                    }
+        } 
+
+## enable or disable a scenario [post api/scenario/enabled/{id}?value]
+If you don't want a scenario to react to changes in the assets without deleting it, you can disable it, use this method. Afterwards you can enable again with the same method.
+
++ Request (application/json)
+    + Header
+    
+            Authorization: Bearer admin_encrypted_token_value
+        
++ Response 200 (application/json) See [create scenario](#create-scenario)
++ Response 404: Not found, the id could not be found
++ Response 400: error
+    
+        {
+            "message" : [
+                            { 
+                                "error" : "some error text." 
+                            },  
+                            { 
+                                "error" : "some error text 2." 
+                            }   
+                        ],
+            "developerMessage": "A message used for debugging purposes",
+            "plainErrors": "some error text. some error text 2.",
+            "state": {
+                        "Toggle failed":{
+                                    "value": null,
+                                    "errors": [
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text."
+                                                  },
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text 2."
+                                                  }
+                                              ]
+                                }
+                    }
+        } 
+
+
 ## Admin PubSubbed Users [/account/pubsubbed/{id}]
 
 Admin user can manage `PubSubbed` status of the users. Admin can eather change User status from `Active` to `PubSubbed` or vise versa. This action will also create or delete RabbitMq required setup (user, exchange, permissions) 
