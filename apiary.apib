@@ -2670,4 +2670,91 @@ Admin user can delete any Gateway by it's id
 + Response 204
 
 + Response 404
+
+## Admin PubSubbed Users [/account/pubsubbed/{id}]
+
+Admin user can manage `PubSubbed` status of the users. Admin can eather change User status from `Active` to `PubSubbed` or vise versa. This action will also create or delete RabbitMq required setup (user, exchange, permissions) 
+
++ Parameters
+    + id (required, string, `user-id-1`) ... String `id` value of the User resource to perform action with. Has example value.
+
+### Set user status to `PubSubbed` [PUT]
+
++ Request (application/json)
+
+    + Header 
+    
+            Authorization: Bearer admin_encrypted_token_value
+
++ Response 200
+
++ Response 400
+
+        {
+            "message" : [
+                            { 
+                                "error" : "some error text." 
+                            },  
+                            { 
+                                "error" : "some error text 2." 
+                            }   
+                        ],
+            "developerMessage": "A message used for debugging purposes",
+            "plainErrors": "some error text. some error text 2.",
+            "state": {
+                        "some_property_name":{
+                                    "value": null,
+                                    "errors": [
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text."
+                                                  },
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text 2."
+                                                  }
+                                              ]
+                                }
+                    }
+        }
+        
+### Revert user status back from `PubSubbed` to `Active` [DELETE]
+
++ Request (application/json)
+
+    + Header 
+    
+            Authorization: Bearer admin_encrypted_token_value
+
++ Response 204
+
++ Response 400
+
+        {
+            "message" : [
+                            { 
+                                "error" : "some error text." 
+                            },  
+                            { 
+                                "error" : "some error text 2." 
+                            }   
+                        ],
+            "developerMessage": "A message used for debugging purposes",
+            "plainErrors": "some error text. some error text 2.",
+            "state": {
+                        "some_property_name":{
+                                    "value": null,
+                                    "errors": [
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text."
+                                                  },
+                                                  {
+                                                      "exception": null,
+                                                      "errorMessage": "some error text 2."
+                                                  }
+                                              ]
+                                }
+                    }
+        }
     
