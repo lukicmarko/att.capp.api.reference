@@ -276,9 +276,16 @@ The Gateway resource has the following attributes:
     
             {
                 "id": "53f7345a3c54ec17f4d9c08b", 
+                "key": "ffedsseraa23sdda",
                 "uid": "aaA", 
                 "name": "Gateway A", 
                 "description": "Description A",
+                "client": {
+                    "type": "RabbitMqClient",
+                    "clientId": "john",
+                    "clientSecret": "t4e$ecr3t",
+                    "vHost": "john-vhost"
+                },
                 "devices": [
                     {
                         "id": "npjTQsoDfbQ8tMyDE1TIlXp",
@@ -485,8 +492,7 @@ The Gateway resource has the following attributes:
                             }
                         ]
                     }
-                ],
-                "key": "ffedsseraa23sdda"
+                ]
             }
 
 ### Retrieve a Gateway [GET]
