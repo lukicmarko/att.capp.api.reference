@@ -110,7 +110,7 @@ Register new user account
 
 ### Activate Account [PUT]
 
-Activate account after registration. You must provide valid activation `token` that is usually found in activation email.
+Activate account after registration. You must provide valid activation `token` that is usually found in activation email. This action will also create RabbitMq required setup (user, exchange, permissions)
 
 + Response 200
 
