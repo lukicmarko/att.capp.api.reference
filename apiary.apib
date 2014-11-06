@@ -1074,13 +1074,15 @@ Adds Asset to a Device resource
     + name (required, string, `Mighty Asset`) ... Asset name
     + deviceId (required, string, `device-1`) ... Device for which this asset is created
 
-
 - Add `X-Zwave-Command-Class` header to annotate the number for Zwave specs Command Class
 
     | Value     | Asset Type        | 
     | ---       |:-------------:    | 
     | 37        | Binary Switch     |
     | 48        | Binary Sensor     |
+
+#### Authorization
+- Bearer or Gateway authorization is required
 
 + Request (application/json)
     
