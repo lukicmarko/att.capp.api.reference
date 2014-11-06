@@ -1064,16 +1064,16 @@ Z-Wave Controller can use this method to add freshly included node to CAPP as a 
     
 # Group Assets
 
-## Device Assets [/device/{id}/assets]
-
-+ Parameters
-    + id (required, string, `5405e0b8fc01be05b437456a`) ... Device identifier
+## Assets [/assets]
 
 ### Add Asset [POST]
 
 Adds Asset to a Device resource
 
-#### Options
++ Parameters
+    + name (required, string, `Mighty Asset`) ... Asset name
+    + deviceId (required, string, `device-1`) ... Device for which this asset is created
+
 
 - Add `X-Zwave-Command-Class` header to annotate the number for Zwave specs Command Class
 
