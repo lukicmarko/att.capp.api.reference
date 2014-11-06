@@ -2633,53 +2633,10 @@ Get all places for this Team. Request is valid for all Team members
                     }
         }
 
-# Group Admin
-
-## Admin Gateways Collection [/admin/gateway]
-
-Collection of all gateways visible only to admin user
-
-### List Gateways for authenticated admin user [GET]
-
-+ Request (application/json)
-
-    + Header
-
-            Authorization: Bearer admin_encrypted_token_value
-
-+ Response 200 (application/json)
-
-        [{
-            "id": "gateway-A", "uid": "gateway-A-uid", "name": "Gateway A", "description": "Description A", "devices": [], "key": "fsdfefeseqeddxx"
-        }, {
-            "id": "gateway-B", "uid": "gateway-B-uid", "name": "Gateway B", "description": "Description B", "devices": [], "key": "aswxwdawssswaat"
-        }]
-
-+ Response 401
-
-
-## Admin delete Gateway [/admin/gateway/{id}]
-
-Admin user can delete any Gateway by it's id
-
-+ Parameters
-    + id (required, string, `gateway-A`) ... String `id` of the Gateway to perform action with. Has example value.
-
-### Delete Gateway by gateway id [DELETE]
-
-+ Request (application/json)
-    
-    + Header
-    
-            Authorization: Bearer admin_encrypted_token_value
-
-+ Response 204
-
-+ Response 404
-
 # Group Scenarios
 
 ## create scenario [post  api/scenario]
+
 uploads a scenario to the platform, activates and initializes it.  During the initialization phase the scenario is run with the current sensor values so that everything is initialized correctly.
 
 + Request (application/json)
@@ -2756,6 +2713,7 @@ uploads a scenario to the platform, activates and initializes it.  During the in
         }
 
 ## update a scenario [put api/scenario/{id}]
+
 updates an already existing scenario in the platform, activates and initializes it.  During the initialization phase the scenario is run with the current sensor values so that everything is initialized correctly.
 
 + Request (application/json)
@@ -2808,6 +2766,7 @@ Deletes a scenario from the system.
         } 
 
 ## enable or disable a scenario [post api/scenario/enabled/{id}?value]
+
 If you don't want a scenario to react to changes in the assets without deleting it, you can disable it, use this method. Afterwards you can enable again with the same method.
 
 + Request (application/json)
@@ -2847,6 +2806,49 @@ If you don't want a scenario to react to changes in the assets without deleting 
                     }
         } 
 
+# Group Admin
+
+## Admin Gateways Collection [/admin/gateway]
+
+Collection of all gateways visible only to admin user
+
+### List Gateways for authenticated admin user [GET]
+
++ Request (application/json)
+
+    + Header
+
+            Authorization: Bearer admin_encrypted_token_value
+
++ Response 200 (application/json)
+
+        [{
+            "id": "gateway-A", "uid": "gateway-A-uid", "name": "Gateway A", "description": "Description A", "devices": [], "key": "fsdfefeseqeddxx"
+        }, {
+            "id": "gateway-B", "uid": "gateway-B-uid", "name": "Gateway B", "description": "Description B", "devices": [], "key": "aswxwdawssswaat"
+        }]
+
++ Response 401
+
+
+## Admin delete Gateway [/admin/gateway/{id}]
+
+Admin user can delete any Gateway by it's id
+
++ Parameters
+    + id (required, string, `gateway-A`) ... String `id` of the Gateway to perform action with. Has example value.
+
+### Delete Gateway by gateway id [DELETE]
+
++ Request (application/json)
+    
+    + Header
+    
+            Authorization: Bearer admin_encrypted_token_value
+
++ Response 204
+
++ Response 404
 
 ## Admin PubSubbed Users [/account/pubsubbed/{id}]
 
