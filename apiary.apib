@@ -2,7 +2,6 @@ FORMAT: 1A
 HOST: http://webapimanagement.cloudapp.net/
 
 # SmartLiving
-SmartLiving API is ...
 
 ## Typical Server Responses
 
@@ -252,7 +251,7 @@ Gateway is a type of device which suits asto control smart devices at a certain 
 
 
 
-## Gateway [/gateway/{id}{?includeDevices}]
+## Gateway [/gateway/{id}]
 
 A single Gateway for current Client with all its details
 
@@ -515,49 +514,8 @@ The Gateway resource has the following attributes:
 
 + Response 404
 
-## Gateway Methods [/gateway/{id}]
 
-+ Parameters
-    + id (required, string, `gateway-A`) ... String `id` of the Gateway to perform action with. Has example value.
-
-### DRAFT: Update Gateway [POST]
-    
-Partial update of a Gateway. Allows client to update these Gateway fields:
-
-- name
-- description
-
-+ Parameters
-    + id (required, string, `gateway-A`) ... String `id` of the Gateway to perform action with. Has example value.
-
-+ Request
-
-    + Header
-
-            Authorization: Bearer some_encrypted_token_value
-    
-    + Body
-
-            {
-                "name": "Gateway A renamed",
-                "description": "Gateway A new description"
-            }
-
-+ Response 200 (application/json)
-
-        {
-            "id": "gateway-A", 
-            "name": "Renamed Gateway A", 
-            "description": "Description A"
-        }
-
-+ Response 401
-
-+ Response 403
-
-+ Response 404
-
-### DRAFT: Replace Gateway [PUT] 
+### Replace Gateway [PUT] 
 
 > @np: I'd keep PUT method as a way to replace the whole Gateway, but not sure if we need it atm. 
     Consider removing this method from docs
@@ -567,6 +525,8 @@ Partial update of a Gateway. Allows client to update these Gateway fields:
     + Header
 
             Authorization: Bearer some_encrypted_token_value
+            Auth-GatewayId: {gateway_id}
+            Auth-GatewayKey: {gateway_key}
     
     + Body
 
@@ -576,9 +536,7 @@ Partial update of a Gateway. Allows client to update these Gateway fields:
 
 + Response 200 (application/json)
 
-        {
-            "id": "gateway-A", "name": "Renamed Gateway A", "description": "Description A"
-        }
+        [Gateway][]
 
 + Response 401
 
@@ -654,11 +612,12 @@ List the authenticated user’s gateways.
 
 + Response 401
 
+
 ### Enroll Gateway [POST]
 
 Enroll new gateway. If called anonymously, this will create an orphaned gateway. 
 
-### Parameters
+#### Parameters
 
 | Name          | Type                  | Description  |
 | :---          | :-------------        | :----------  |
@@ -681,14 +640,13 @@ Enroll new gateway. If called anonymously, this will create an orphaned gateway.
             }
             
 
-+ Response 204
++ Response 200
 
-+ Response 200 (application/json)
+    [Gateway][]
+
++ Response 204    
 
 
-        [Gateway][]
-    
-    
 ## Claiming Gateway [/claim]
 
 Claiming a Gateway for current Client with all its details.
@@ -909,19 +867,24 @@ Representation of Device resource
     [Device][]
 
  
-### DRAFT: Replace Device [PUT]
+### Replace Device [PUT]
 
 To connect a Device, send the whole device state. Use connect if you are not sure if the Device resource with specified `id` already exists or you need to create it at this point.
 Semantically, this will replace the already existing Device resource, so use it carefully.
 
-Z-Wave
-Controller client can use this method after successful inclusion of a node with ensured unique ID
+Zwave Controller client can use this method after successful inclusion of a node with ensured unique ID
+
+#### Authorization
+- Bearer or Gateway authorization is required
 
 + Request 
 
     + Header
     
             Authorization: Bearer some_encrypted_token_value
+            
+            Auth-GatewayId: gateway-A
+            Auth-GatewayKey: ffedsseraa23sdda
     
     + Body
     
@@ -929,41 +892,44 @@ Controller client can use this method after successful inclusion of a node with 
                 "name": "Device A2",
             }
 
++ Response 200
+
+    [Device][]
+            
 + Response 201
 
     [Device][]
-    
-+ Response 200
-            
 
+### Remove Device [DELETE]
 
-### DRAFT: Remove Device [DELETE]
+Deletes device
 
-#### Z-Wave usage
+- Zwave Controller client can use this method after exclusion of a node in order to delete the Device from System.
 
-- Controller client can use this method after exclusion of a node.
+#### Authorization
+- Bearer or Gateway authorization is required
 
 + Request (application/json)
     
     + Header
     
             Authorization: Bearer some_encrypted_token_value
+            Auth-GatewayId: gateway-A
+            Auth-GatewayKey: ffedsseraa23sdda
 
 + Response 204
     
 
-## Devices [/device{?gatewayId,new}]
-Collection of all devices owned by authorized user account
+## Devices [/devices]
 
+
+### Get Devices [GET]
+
+Gets devices. Returns array of devices owned by the authorized user.
 
 + Parameters
     + gatewayId (optional, string, `gateway-A`) ... Query parameter. When specified returns collection of devices associated with specified gateway
     + new (optional) ... Add this tag in parameter list to retrieve only new devices, those that are included in the last dozen of seconds
-
-
-### Get Devices collection [GET]
-
-Returns collection of Devices owned by authorized user account. 
 
 + Request (application/json)
 
@@ -1054,11 +1020,15 @@ Returns collection of Devices owned by authorized user account.
             }
         ]
 
-## Devices [/device]
-
 ### Create Device [POST]
 
+If called with Bearer authorization, creates new device owned by user. If called with Gateway authorization, creates device associated to the gateway. 
+Gateway's owner becomes owner of the Device.
+
 Z-Wave Controller can use this method to add freshly included node to CAPP as a Device resource. 
+
+#### Authorization
+- Bearer or Gateway authorization is required
 
 #### Options
 
@@ -1074,7 +1044,8 @@ Z-Wave Controller can use this method to add freshly included node to CAPP as a 
 + Request (application/json)
 
     + Header
-    
+            
+            Authorization: Bearer some_encrypted_token_value
             Auth-GatewayId: gateway-A
             Auth-GatewayKey: ffedsseraa23sdda
     
@@ -2633,12 +2604,53 @@ Get all places for this Team. Request is valid for all Team members
                     }
         }
 
+# Group Admin
+
+## Admin Gateways Collection [/admin/gateway]
+
+Collection of all gateways visible only to admin user
+
+### List Gateways for authenticated admin user [GET]
+
++ Request (application/json)
+
+    + Header
+
+            Authorization: Bearer admin_encrypted_token_value
+
++ Response 200 (application/json)
+
+        [{
+            "id": "gateway-A", "uid": "gateway-A-uid", "name": "Gateway A", "description": "Description A", "devices": [], "key": "fsdfefeseqeddxx"
+        }, {
+            "id": "gateway-B", "uid": "gateway-B-uid", "name": "Gateway B", "description": "Description B", "devices": [], "key": "aswxwdawssswaat"
+        }]
+
++ Response 401
+
+
+## Admin delete Gateway [/admin/gateway/{id}]
+
+Admin user can delete any Gateway by it's id
+
++ Parameters
+    + id (required, string, `gateway-A`) ... String `id` of the Gateway to perform action with. Has example value.
+
+### Delete Gateway by gateway id [DELETE]
+
++ Request (application/json)
+    
+    + Header
+    
+            Authorization: Bearer admin_encrypted_token_value
+
++ Response 204
+
++ Response 404
+
 # Group Scenarios
 
-## scenario operatiors
-
-### create scenario [post  api/scenario]
-
+## create scenario [post  api/scenario]
 uploads a scenario to the platform, activates and initializes it.  During the initialization phase the scenario is run with the current sensor values so that everything is initialized correctly.
 
 + Request (application/json)
@@ -2714,8 +2726,7 @@ uploads a scenario to the platform, activates and initializes it.  During the in
                     }
         }
 
-### update a scenario [put api/scenario/{id}]
-
+## update a scenario [put api/scenario/{id}]
 updates an already existing scenario in the platform, activates and initializes it.  During the initialization phase the scenario is run with the current sensor values so that everything is initialized correctly.
 
 + Request (application/json)
@@ -2769,9 +2780,7 @@ Deletes a scenario from the system.
                     }
         } 
 
-
-### enable or disable a scenario [post api/scenario/enabled/{id}?value]
-
+## enable or disable a scenario [post api/scenario/enabled/{id}?value]
 If you don't want a scenario to react to changes in the assets without deleting it, you can disable it, use this method. Afterwards you can enable again with the same method.
 
 + Request (application/json)
@@ -2811,49 +2820,6 @@ If you don't want a scenario to react to changes in the assets without deleting 
                     }
         } 
 
-# Group Admin
-
-## Admin Gateways Collection [/admin/gateway]
-
-Collection of all gateways visible only to admin user
-
-### List Gateways for authenticated admin user [GET]
-
-+ Request (application/json)
-
-    + Header
-
-            Authorization: Bearer admin_encrypted_token_value
-
-+ Response 200 (application/json)
-
-        [{
-            "id": "gateway-A", "uid": "gateway-A-uid", "name": "Gateway A", "description": "Description A", "devices": [], "key": "fsdfefeseqeddxx"
-        }, {
-            "id": "gateway-B", "uid": "gateway-B-uid", "name": "Gateway B", "description": "Description B", "devices": [], "key": "aswxwdawssswaat"
-        }]
-
-+ Response 401
-
-
-## Admin delete Gateway [/admin/gateway/{id}]
-
-Admin user can delete any Gateway by it's id
-
-+ Parameters
-    + id (required, string, `gateway-A`) ... String `id` of the Gateway to perform action with. Has example value.
-
-### Delete Gateway by gateway id [DELETE]
-
-+ Request (application/json)
-    
-    + Header
-    
-            Authorization: Bearer admin_encrypted_token_value
-
-+ Response 204
-
-+ Response 404
 
 ## Admin PubSubbed Users [/account/pubsubbed/{id}]
 
