@@ -2635,7 +2635,9 @@ Get all places for this Team. Request is valid for all Team members
 
 # Group Scenarios
 
-## create scenario [post  api/scenario]
+## scenario operatiors
+
+### create scenario [post  api/scenario]
 
 uploads a scenario to the platform, activates and initializes it.  During the initialization phase the scenario is run with the current sensor values so that everything is initialized correctly.
 
@@ -2712,7 +2714,7 @@ uploads a scenario to the platform, activates and initializes it.  During the in
                     }
         }
 
-## update a scenario [put api/scenario/{id}]
+### update a scenario [put api/scenario/{id}]
 
 updates an already existing scenario in the platform, activates and initializes it.  During the initialization phase the scenario is run with the current sensor values so that everything is initialized correctly.
 
@@ -2765,7 +2767,8 @@ Deletes a scenario from the system.
                     }
         } 
 
-## enable or disable a scenario [post api/scenario/enabled/{id}?value]
+
+### enable or disable a scenario [post api/scenario/enabled/{id}?value]
 
 If you don't want a scenario to react to changes in the assets without deleting it, you can disable it, use this method. Afterwards you can enable again with the same method.
 
