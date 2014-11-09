@@ -116,7 +116,7 @@ Activate account after registration. You must provide valid activation `token` t
 + Response 400
 
 
-## OAuth2 Token [/login]
+## Login [/login]
 Retrieve new access token or refresh existing access token for registered user account.
 There are 2 types of POST /login calls:
 
@@ -126,23 +126,23 @@ There are 2 types of POST /login calls:
 Each access token has exactly `60 min` expiry policy. This means that after 60 mins the access token in no longer valid, 
 therefore client needs to obtain new access token using previously provided refresh token.
 
-### Login user via username and password [POST]
+### Login with username and password [POST]
 
 To get access token for username and password, client must send following parameters:
 
-- grant_type=password
-- username
-- password
-- client_id (this will be different for each API Client: iOS app, Android app, web app)
-- client_secret (each client_id will have it's own secret key)
-- uuid (Unique identifier for the device e.g. UUID of the phone or Browser-Agent for the web applications)
+- `grant_type=password`
+- `username`
+- `password`
+- `client_id` (this will be different for each API Client: iOS app, Android app, web app)
+- `client_secret` (each `client_id` will have it's own secret key)
+- `uuid` (Unique identifier for the device e.g. UUID of the phone or Browser-Agent for the web applications)
 
 For getting access token via existing refresh token following parameters will be send
 
-- grant_type=refresh_token
-- refresh_token
-- client_id (this will be different for each API Client: iOS app, Android app, web app)
-- client_secret (each client_id will have it's own secret key)
+- `grant_type=refresh_token`
+- `refresh_token`
+- `client_id` (this will be different for each API Client: iOS app, Android app, web app)
+- `client_secret` (each `client_id` will have it's own secret key)
 
 + Request (application/x-www-form-urlencoded)
 
